@@ -23,11 +23,18 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 
 #include <wiringPi.h>
 #include <maxdetect.h>
 
 #define	RHT03_PIN	7
+#define TEMP_URL_SIZE	200
+#define HUM_URL_SIZE	200
+#define BUFFER_SIZE	10
+
+#define TEMP_BASE_URL	"www.ouroboros.com/temp/"	
+#define HUM_BASE_URL	"www.ouroboros.com/hum/"	
 
 /*
  ***********************************************************************
@@ -42,9 +49,12 @@ int main (void)
 
   temp = rh = newTemp = newRh = 0 ;
 
-
   wiringPiSetup () ;
   piHiPri       (55) ;
+
+  char tempURL[TEMP_URL_SIZE] = TEMP_BASE_URL;
+  char humURL[HUM_URL_SIZE] = HUM_BASE_URL;
+  char buffer[BUFFER_SIZE];
 
 
   for (;;)
@@ -68,6 +78,24 @@ int main (void)
     }
 
     printf ("Temp: %5.1f, RH: %5.1f%%\n", temp / 10.0, rh / 10.0) ;
+    
+    // clear buffer, add temp value to buffer and concatonate to url
+    memset(&buffer[0], 0, sizeof(buffer));
+    memset(&tempURL[0], 0, sizeof(tempURL));
+    strcpy(tempURL, TEMP_BASE_URL);
+    sprintf(buffer, "%d", temp / 10 );
+    strcat(tempURL, buffer );
+
+    // repeat for humidity readings
+    memset(&buffer[0], 0, sizeof(buffer) );
+    memset(&humURL[0], 0, sizeof(humURL) );
+    strcpy(humURL, HUM_BASE_URL);
+    sprintf(buffer, "%d", rh / 10 );
+    strcat(humURL, buffer );
+
+    //send measurements to server
+    printf("%s\n", tempURL );
+    printf("%s\n", humURL );
 
   }
 
