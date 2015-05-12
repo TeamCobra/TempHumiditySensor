@@ -24,17 +24,22 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include <wiringPi.h>
 #include <maxdetect.h>
 
 #define	RHT03_PIN	7
-#define TEMP_URL_SIZE	200
-#define HUM_URL_SIZE	200
+#define TEMP_URL_SIZE	500
+#define HUM_URL_SIZE	500
 #define BUFFER_SIZE	10
 
-#define TEMP_BASE_URL	"www.ouroboros.com/temp/"	
-#define HUM_BASE_URL	"www.ouroboros.com/hum/"	
+#define TEMP_CURLSTR_0	"curl -X PUT -d \"{value:"	
+#define TEMP_CURLSTR_1	"}\" 129.21.207.245:8080/groups/weather_app/fields/temperature/"	
+
+#define HUM_CURLSTR_0	"curl -X PUT -d \"{value:"	
+#define HUM_CURLSTR_1	"}\" 129.21.207.245:8080/groups/weather_app/fields/humidity/"	
+
 
 /*
  ***********************************************************************
@@ -52,8 +57,8 @@ int main (void)
   wiringPiSetup () ;
   piHiPri       (55) ;
 
-  char tempURL[TEMP_URL_SIZE] = TEMP_BASE_URL;
-  char humURL[HUM_URL_SIZE] = HUM_BASE_URL;
+  char tempURL[TEMP_URL_SIZE] = TEMP_CURLSTR_0;
+  char humURL[HUM_URL_SIZE] = HUM_CURLSTR_0;
   char buffer[BUFFER_SIZE];
 
 
@@ -82,20 +87,24 @@ int main (void)
     // clear buffer, add temp value to buffer and concatonate to url
     memset(&buffer[0], 0, sizeof(buffer));
     memset(&tempURL[0], 0, sizeof(tempURL));
-    strcpy(tempURL, TEMP_BASE_URL);
+    strcpy(tempURL, TEMP_CURLSTR_0);
     sprintf(buffer, "%d", temp / 10 );
     strcat(tempURL, buffer );
+    strcat(tempURL, TEMP_CURLSTR_1);
 
     // repeat for humidity readings
     memset(&buffer[0], 0, sizeof(buffer) );
     memset(&humURL[0], 0, sizeof(humURL) );
-    strcpy(humURL, HUM_BASE_URL);
+    strcpy(humURL, HUM_CURLSTR_0);
     sprintf(buffer, "%d", rh / 10 );
     strcat(humURL, buffer );
-
+    strcat(humURL, HUM_CURLSTR_1);
+    
     //send measurements to server
-    printf("%s\n", tempURL );
-    printf("%s\n", humURL );
+    //printf("%s\n", tempURL );
+    //printf("%s\n", humURL );
+    system(tempURL);
+    system(humURL);
 
   }
 
